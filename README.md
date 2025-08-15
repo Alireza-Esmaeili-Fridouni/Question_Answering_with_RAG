@@ -41,11 +41,38 @@ The core logic is implemented in the `rag_on_mini_wikipedia.ipynb` Jupyter noteb
 The notebook performs the following operations:
 
 1. **Load Data**: Reads the `passages.parquet` (renamed to `df_infos`) and `test.parquet` (renamed to `df_questions`) file
-```python
-df_infos = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/passages.parquet/part.0.parquet")
-df_questions = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/test.parquet/part.0.parquet")
-```
+    ```python
+    df_infos = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/passages.parquet/part.0.parquet")
+    df_questions = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/test.parquet/part.0.parquet")
+    ```
 
 2. **Initialize Models**:
 
-  - **Sentence Transformer for Similarity**: Uses `all-mpnet-base-v2` for generating embeddings for retrieval.
+    - **Sentence Transformer for Similarity**: Uses `all-mpnet-base-v2` for generating embeddings for retrieval.
+        ```python
+        model_similarity_name = "all-mpnet-base-v2"
+        model_similarity = SentenceTransformer(model_similarity_name)
+        ```
+    - **LLM for Generation**: Loads `microsoft/Phi-4-mini-instruct` for answer generation.
+      ```python
+      llm_model_name = "microsoft/Phi-4-mini-instruct"
+      model, tokenizer = llm_loader(llm_model_name)
+      ```
+      
+3. **Create Vector Database**: Generates embeddings for all passages in `df_infos` to build the retrieval knowledge base.
+    ```python
+    vector_database = database_creator(df_infos, "text")
+    ```
+
+4. **Perform RAG for Questions**: Iterates through each question in `df_questions`, retrieves top-k relevant passages, constructs a contextualized prompt, and generates an answer using the LLM.
+    ```python
+    for question in df_predict['question']:
+    answer = llm_generator(model, tokenizer, question, vector_database, top_k=5, max_new_tokens=512)
+    predict.append(answer)
+    df_predict['prediction'] = predict
+    ```
+
+5. **Save Predictions**: Saves the questions and their generated predictions to a CSV file named predict.csv.
+    ```python
+    df_predict.to_csv("predict.csv", index=False)
+    ```
