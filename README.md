@@ -9,6 +9,7 @@ requiring fact-grounded responses from a specific knowledge base.
 
 - [Features](#Features)
 - [Dataset](#Dataset)
+- [Usage](#Usage)
 
 ## Features
 **Efficient Information Retrieval**: Utilizes `sentence-transformers` to create a vector database from Wikipedia passages, enabling fast and relevant document retrieval.
@@ -32,3 +33,19 @@ It contains short Wikipedia passages and is suitable for lightweight training, e
 - `test.parquet`: Contains a set of questions for evaluating the RAG system.
 
 You can find the dataset at: https://huggingface.co/datasets/rag-datasets/rag-mini-wikipedia
+
+## Usage
+The core logic is implemented in the `rag_on_mini_wikipedia.ipynb` Jupyter notebook.
+
+### Key Steps in the Notebook
+The notebook performs the following operations:
+
+1. **Load Data**: Reads the `passages.parquet` (renamed to `df_infos`) and `test.parquet` (renamed to `df_questions`) file
+```python
+df_infos = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/passages.parquet/part.0.parquet")
+df_questions = pd.read_parquet("hf://datasets/rag-datasets/rag-mini-wikipedia/data/test.parquet/part.0.parquet")
+```
+
+2. **Initialize Models**:
+
+  - **Sentence Transformer for Similarity**: Uses `all-mpnet-base-v2` for generating embeddings for retrieval.
